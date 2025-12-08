@@ -19,7 +19,6 @@ spec:
       containers:
       - name: ollama
         image: ollama/ollama:latest
-        command: ["/bin/sh", "-c", "sleep infinity"]
         ports:
         - containerPort: 11434
 ---
