@@ -18,7 +18,8 @@ spec:
     spec:
       containers:
       - name: ollama
-        image: alpine:latest
+        image: ollama/ollama:latest
+        command: ["/bin/sh", "-c", "sleep infinity"]
         ports:
         - containerPort: 11434
 ---
