@@ -1,36 +1,59 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: ai-services
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  annotations:
+    argocd.argoproj.io/tracking-id: ollama:apps/Deployment:ai-services/ollama
+    deployment.kubernetes.io/revision: "5"
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{"argocd.argoproj.io/tracking-id":"ollama:apps/Deployment:ai-services/ollama"},"name":"ollama","namespace":"ai-services"},"ports":[{"containerPort":11434}],"spec":{"replicas":1,"selector":{"matchLabels":{"app":"ollama"}},"template":{"metadata":{"labels":{"app":"ollama"}},"spec":{"containers":[{"image":"ollama/ollama:latest","imagePullPolicy":"Never","name":"ollama"}]}}}}
   name: ollama
   namespace: ai-services
 spec:
+  progressDeadlineSeconds: 600
   replicas: 1
+  revisionHistoryLimit: 10
   selector:
-    matchLabels: { app: ollama }
+    matchLabels:
+      app: ollama
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
   template:
     metadata:
-      labels: { app: ollama }
+      labels:
+        app: ollama
     spec:
       containers:
-      - name: ollama
-        image: ollama/ollama:latest
-        imagePullPolicy: Never        
-ports:
-        - containerPort: 11434
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: ollama-service
-  namespace: ai-services
-spec:
-  type: NodePort
-  selector: { app: ollama }
-  ports:
-  - port: 11434
-    targetPort: 11434
+      - image: ollama/ollama:latest
+        imagePullPolicy: Never
+        name: ollama
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+status:
+  availableReplicas: 1
+  conditions:
+  - lastTransitionTime: "2025-12-12T12:21:56Z"
+    lastUpdateTime: "2025-12-12T12:21:56Z"
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  - lastTransitionTime: "2025-12-08T13:11:22Z"
+    lastUpdateTime: "2025-12-12T12:37:03Z"
+    message: ReplicaSet "ollama-5f9fb54bfb" has successfully progressed.
+    reason: NewReplicaSetAvailable
+    status: "True"
+    type: Progressing
+  observedGeneration: 5
+  readyReplicas: 1
+  replicas: 1
+  updatedReplicas: 1
+
