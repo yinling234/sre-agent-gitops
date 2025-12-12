@@ -19,7 +19,8 @@ spec:
       containers:
       - name: ollama
         image: ollama/ollama:latest
-        ports:
+        imagePullPolicy: Never        
+ports:
         - containerPort: 11434
 ---
 apiVersion: v1
