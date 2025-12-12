@@ -19,7 +19,7 @@ spec:
       containers:
       - name: ollama
         image: ollama/ollama:latest
-        imagepullpolicy: Never
+        imagePullPolicy: Never
         ports:
         - containerPort: 11434
 ---
