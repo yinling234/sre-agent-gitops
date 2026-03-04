@@ -16,7 +16,7 @@ spec:
         kubernetes.io/hostname: k8s-node1
       containers:
       - name: ollama
-        image: ollama/ollama:latest
+        image: docker.io/ollama/ollama:latest
         imagePullPolicy: Never  # 强制使用本地镜像
         ports:
         - containerPort: 11434
