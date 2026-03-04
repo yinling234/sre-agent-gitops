@@ -1,3 +1,23 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ai-services
+---
+# 先创建 PVC（注意：PVC 要和 Deployment 同命名空间 ai-services）
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: local-pvc-5g
+  namespace: ai-services  # 必须和Ollama同命名空间，否则无法绑定
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: local-storage
+  volumeMode: Filesystem
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -16,7 +36,6 @@ spec:
       containers:
       - name: ollama
         image: ollama/ollama:latest
-        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 11434
         # 挂载PVC到容器内Ollama的模型存储目录（核心配置）
