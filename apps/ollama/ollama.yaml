@@ -14,6 +14,13 @@ spec:
       # 强制Pod调度到k8s-node1（PV所在节点）
       nodeSelector:
         kubernetes.io/hostname: k8s-node1
+      tolerations:  # 必须加这一段！
+      - key: "node-role.kubernetes.io/control-plane"
+        operator: "Exists"
+        effect: "NoSchedule"
+      - key: "node-role.kubernetes.io/master"  # 兼容旧版master污点
+        operator: "Exists"
+        effect: "NoSchedule"
       containers:
       - name: ollama
         image: docker.io/ollama/ollama:latest
