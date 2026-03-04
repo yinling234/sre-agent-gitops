@@ -36,6 +36,7 @@ spec:
       containers:
       - name: ollama
         image: ollama/ollama:latest
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 11434
         # 挂载PVC到容器内Ollama的模型存储目录（核心配置）
