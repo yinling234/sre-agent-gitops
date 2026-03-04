@@ -30,6 +30,11 @@ spec:
   volumeMode: Filesystem
 ---
 apiVersion: v1
+kind: Namespace
+metadata:
+  name: ai-services
+---
+apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: local-pvc-5g
@@ -42,11 +47,6 @@ spec:
       storage: 5Gi
   storageClassName: local-storage
   volumeMode: Filesystem
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: ai-services
 ---
 apiVersion: apps/v1
 kind: Deployment
