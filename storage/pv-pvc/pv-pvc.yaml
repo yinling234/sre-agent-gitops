@@ -1,0 +1,56 @@
+# 1. 存储类（StorageClass）- 集群级资源，无命名空间
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: local-storage
+provisioner: rancher.io/local-path
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+parameters:
+  storage.k8s.io/overlay: "true"
+---
+# 2. 持久卷（PV）- 集群级资源，无命名空间，新增标签供selector匹配
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: my-local-pv
+  labels:
+    app: my-app
+    storage: local-data
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-storage
+  local:
+    path: /data/k8s/local-storage
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - node-1  # 替换为你的节点名称
+  persistentVolumeReclaimPolicy: Delete
+---
+# 3. 持久卷声明（PVC）- 指定命名空间为ai-services，selector强制绑定PV
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-local-pvc
+  namespace: ai-services  # 核心：指定PVC的命名空间为ai-services
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: local-storage
+  volumeMode: Filesystem
+  # selector强制匹配指定标签的PV
+  selector:
+    matchLabels:
+      app: my-app
+      storage: local-data
