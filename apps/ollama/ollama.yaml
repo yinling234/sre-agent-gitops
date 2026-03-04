@@ -61,11 +61,23 @@ spec:
     metadata:
       labels: { app: ollama }
     spec:
+      imagePullPolicy: Never     
+ # 新增：定义要使用的PVC卷
+      volumes:
+      - name: ollama-data  # 卷的名称（自定义，后续挂载时要对应）
+        persistentVolumeClaim:
+          claimName: local-pvc-5g  # 关联上面定义的PVC名称
       containers:
       - name: ollama
         image: ollama/ollama:latest
         ports:
         - containerPort: 11434
+        # 新增：将卷挂载到容器内的Ollama数据目录
+        volumeMounts:
+        - name: ollama-data  # 必须和上面volumes里的name一致
+          mountPath: /root/.ollama  # Ollama默认的模型存储目录，不能改
+          # 可选：subPath可以将数据存到PVC的子目录，避免根目录混乱
+          # subPath: ollama-models
 ---
 apiVersion: v1
 kind: Service
