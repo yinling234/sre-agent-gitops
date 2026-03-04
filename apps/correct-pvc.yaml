@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-local-pvc
+  namespace: ai-services
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: local-storage
+  volumeMode: Filesystem
+  # 强制绑定1：通过标签匹配PV
+  selector:
+    matchLabels:
+      app: my-app
+      storage: local-data
+  # 强制绑定2：直接指定PV名称（终极强制，优先级最高）
+  volumeName: my-local-pv

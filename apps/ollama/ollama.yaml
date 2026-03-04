@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ollama
+  namespace: ai-services
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: ollama }
+  template:
+    metadata:
+      labels: { app: ollama }
+    spec:
+      # 强制Pod调度到k8s-node1（PV所在节点）
+      nodeSelector:
+        kubernetes.io/hostname: k8s-node1
+      containers:
+      - name: ollama
+        image: ollama/ollama:latest
+        imagePullPolicy: Never  # 强制使用本地镜像
+        ports:
+        - containerPort: 11434
+        # 挂载PVC到容器内的/root/.ollama/目录
+        volumeMounts:
+        - name: ollama-storage
+          mountPath: /root/.ollama/
+          readOnly: false
+      # 定义PVC挂载
+      volumes:
+      - name: ollama-storage
+        persistentVolumeClaim:
+          claimName: my-local-pvc
+          readOnly: false
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ollama-service
+  namespace: ai-services
+spec:
+  type: NodePort
+  selector: { app: ollama }
+  ports:
+  - port: 11434          # Service内部端口
+    targetPort: 11434    # 容器端口
+    nodePort: 32618      # 核心：强制指定NodePort为32618
