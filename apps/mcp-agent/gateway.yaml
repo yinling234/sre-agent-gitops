@@ -1,4 +1,4 @@
-# --- AI Gateway Service ---
+# --- AI Gateway Service --
 apiVersion: v1
 kind: Service
 metadata:
@@ -32,7 +32,7 @@ spec:
     spec:
       containers:
       - name: gateway
-        image: ai-gateway:v3
+        image: ai-gateway:v4
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 3000
