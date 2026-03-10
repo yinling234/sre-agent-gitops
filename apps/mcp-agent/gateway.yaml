@@ -1,5 +1,4 @@
 # --- AI Gateway Service ---
-# 使用 NodePort 暴露服务，方便浏览器访问
 apiVersion: v1
 kind: Service
 metadata:
@@ -10,12 +9,12 @@ spec:
   ports:
   - port: 3000
     targetPort: 3000
-    nodePort: 30080 # 固定端口，方便记忆
+    nodePort: 30080 # 固定NodePort端口
   selector:
     app: ai-gateway
 
 ---
-# --- AI Gateway Deployment ---
+# --- AI Gateway Deployment（最终版） ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -34,7 +33,35 @@ spec:
       containers:
       - name: gateway
         image: ai-gateway:v1
-        imagePullPolicy: IfNotPresent # 同样使用本地镜像
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 3000
-        # Gateway 代码中硬编码了连接地址，所以这里不需要环境变量
+        # 核心：注入集群内服务地址的环境变量（覆盖代码硬编码）
+        env:
+        - name: MCP_SERVER_URL
+          # MCP Server的集群内访问地址（Service名+命名空间+端口）
+          value: "http://mcp-server-service.ai-services.svc.cluster.local:8080/sse"
+        - name: OLLAMA_URL
+          # Ollama的集群内访问地址（已修改为11435端口）
+          value: "http://ollama-service.ai-services.svc.cluster.local:11435"
+        # 存活探针：检测程序是否运行，避免频繁重启
+        livenessProbe:
+          exec:
+            command: ["/bin/sh", "-c", "ps aux | grep ai-gateway | grep -v grep"]
+          initialDelaySeconds: 10 # 启动10秒后开始检测
+          periodSeconds: 5        # 每5秒检测一次
+          failureThreshold: 3     # 失败3次才重启
+        # 就绪探针：确保程序就绪后再对外提供服务
+        readinessProbe:
+          exec:
+            command: ["/bin/sh", "-c", "ps aux | grep ai-gateway | grep -v grep"]
+          initialDelaySeconds: 5
+          periodSeconds: 3
+        # 资源限制：避免占用过多资源
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 200m
+            memory: 256Mi
